@@ -52,7 +52,8 @@ export default {
           //tiles: my_url_array,
           //tiles: ["http://localhost:5000/tippecanoe/allWaysMB.mbtiles"],
           //tiles: [new URL("./newTry", window.location.href).href + "/{z}/{x}/{y}.pbf"],
-          tiles:["http://localhost:5000/tippecanoe/allWays/{z}/{x}/{y}.pbf"], //["http://localhost:8081/tippecanoe_funzionante/allWays/{z}/{x}/{y}.pbf"], 
+          //tiles:["http://localhost:5000/tippecanoe/allWays/{z}/{x}/{y}.pbf"], //["http://localhost:8081/tippecanoe_funzionante/allWays/{z}/{x}/{y}.pbf"], 
+          tiles:["https://spatialite-database-bicycle.herokuapp.com/tippecanoe/allWays/{z}/{x}/{y}.pbf"],
           //'minzoom': 6,
           'maxzoom': 17,
       });
