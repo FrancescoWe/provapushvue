@@ -32,6 +32,9 @@ exports.plugins.push(
 //Vue.http.options.emulateJSON = true
 //
 //Vue.use(Vuetify);
+
+Vue.prototype.$api_url = "http://localhost:5000"
+
 Vue.use(VueMaterial)
 Vue.use(Ionic);
 Vue.config.productionTip = false

@@ -77,7 +77,6 @@ export default {
             console.log(items)
             console.log("Worked?")
           })
-          //cancella domanda ---> forse faccio verifica su nodejs, already done
         }else{
           //altrimenti setto booleana cancella a false
           cancella=false
@@ -95,11 +94,17 @@ export default {
 
     async deleteGeometry(id,type){
       console.log("entered_function "+id +type)
+      var my_body = {
+        "id":id,
+        "type":type
+      }
+      console.log(type)
       try{
-        const my_url = "http://localhost:5000/posts/delete/"+type+"&"+id;
+        const my_url = this.$api_url + "/posts/allAnswerCompleted"
         const requestSpatialite = {
-          method:"delete", 
+          method:"post", 
           headers:{ "Content-Type":"application/json"},
+          body: JSON.stringify(my_body)
         };
         const fetchdata = await fetch(my_url,requestSpatialite)
           .then(response => response.json())
@@ -121,7 +126,7 @@ export default {
       }
       console.log(my_body)
       try{
-        const my_url = "http://localhost:5000/posts/addAnswer"
+        const my_url = this.$api_url + "/posts/addAnswer"
         const requestSpatialite = {
           method:"post",
           headers:{ "Content-Type":"application/json"},

@@ -34,14 +34,36 @@ export default {
       center: [initialState.lng, initialState.lat],
       zoom: initialState.zoom
     });
-    //const my_data_path = "../../src/assets/newTry"
-    var my_url_array = ["http://localhost:5000/tippecanoe/newTry/935556427/{z}/{x}/{y}.pbf", "http://localhost:5000/tippecanoe/newTry/201175004/{z}/{x}/{y}.pbf"]
-    console.log(my_url_array)
-    /*var my_url_array = [];
-    my_url_array = await this.getAllUrls(function(){
+    const way_url = this.$api_url + "/tippecanoe/allWays/{z}/{x}/{y}.pbf";
+    const node_url = this.$api_url + "/tippecanoe/allNodes/{z}/{x}/{y}.pbf"
+
+    //PRIMA DI TUTTO FACCIO CHIAMATA CHE MI DICE QUALI VIE MOSTRARE E QUALI NO
+    var my_completed_ways_dt = await this.getAllCompletedWaysAndNodes(function(){
       console.log("finished")
-    })
-    console.log(my_url_array)*/
+    },"way")
+    console.log(my_completed_ways_dt)
+    var my_completed_ways = []
+    for(var i in my_completed_ways_dt){
+      console.log(my_completed_ways_dt[i].id)
+      my_completed_ways.push(my_completed_ways_dt[i].id)
+    }
+    if(my_completed_ways.length == 0){
+      my_completed_ways.push(0);
+    }
+    //console.log(my_completed_ways)
+    var my_completed_nodes_dt = await this.getAllCompletedWaysAndNodes(function(){
+      console.log("finished")
+    },"node")
+    console.log(my_completed_nodes_dt)
+    var my_completed_nodes = []
+    for(var j in my_completed_nodes){{
+      console.log(my_completed_nodes_dt[j].id)
+      my_completed_nodes.push(my_completed_nodes_dt[j].id)
+    }}
+    if(my_completed_nodes.length == 0){
+      my_completed_nodes.push(0)
+    }
+
     map.addControl(new maplibre.NavigationControl());
     map.on('load',function(){
       map.resize();
@@ -52,8 +74,8 @@ export default {
           //tiles: my_url_array,
           //tiles: ["http://localhost:5000/tippecanoe/allWaysMB.mbtiles"],
           //tiles: [new URL("./newTry", window.location.href).href + "/{z}/{x}/{y}.pbf"],
-          //tiles:["http://localhost:5000/tippecanoe/allWays/{z}/{x}/{y}.pbf"], //["http://localhost:8081/tippecanoe_funzionante/allWays/{z}/{x}/{y}.pbf"], 
-          tiles:["https://spatialite-database-bicycle.herokuapp.com/tippecanoe/allWays/{z}/{x}/{y}.pbf"],
+          tiles:[way_url], //["http://localhost:8081/tippecanoe_funzionante/allWays/{z}/{x}/{y}.pbf"], 
+          //tiles:["https://spatialite-database-bicycle.herokuapp.com/tippecanoe/allWays/{z}/{x}/{y}.pbf"],
           //'minzoom': 6,
           'maxzoom': 17,
       });
@@ -66,18 +88,30 @@ export default {
         'minzoom' : 5,
         'layout':{
                 'line-join': 'round',
-                'line-cap': 'round'
+                'line-cap': 'round',
+                //"visibility":'none',
               },
               'paint': {
-                'line-color': ["get","color"],
-                'line-width': 7,
-              }
+                //'line-color': ["get","color"],
+                "line-color":[
+                  "match",
+                  ["get","id"],
+                  //[935556427,303166647], //è una lista penso
+                  my_completed_ways,
+                  "transparent", //se metto transparent scompare ma è cliccabile
+                  ["get","color"], //"black",
+                ], //COSI FUNZIONA!
+                //"line-opacity":0.0,
+                'line-width': 3,
+              },
       })
       this.mappa=map //////////////////////////////////////////////////7
       map.on('click', 'my_way_data',function(e){
-        console.log(map.getLayer("combined"))
+        console.log(map.getLayer("my_way_data"))
+        var features = map.queryRenderedFeatures(e.point);
+        console.log(features)
         console.log(e.features[0])
-        console.log(e)
+        //console.log(e)
         //qua dovrei fare na chiamata e aspettare la risposta per poi caricare le doamnde corrispondenti al dato elemento.
         ref.getQuestion(e.features[0].properties.id,"WAY").then(items =>{
           const open_list = []
@@ -115,7 +149,7 @@ export default {
           //tiles:["http://localhost:8081/MergingJsonFiles/allTogetherNow/{z}/{x}/{y}.pbf"],
           //tiles:["http://localhost:8081/prove_con_tippecanoe/provetta/{z}/{x}/{y}.pbf"], //FUNZIONA
           //tiles: ["http://localhost:8081/MergingJsonFiles/allTogetherNow/{z}/{x}/{y}.pbf"], //FUNZIONA
-          tiles: ["http://localhost:5000/tippecanoe/allNodes/{z}/{x}/{y}.pbf"],//["http://localhost:8081/tippecanoe_funzionante/allNodes/{z}/{x}/{y}.pbf"], 
+          tiles: [node_url],//["http://localhost:8081/tippecanoe_funzionante/allNodes/{z}/{x}/{y}.pbf"], 
           //'minzoom': 6,
       });
       map.addLayer({
@@ -178,7 +212,7 @@ export default {
   methods:{
     async getQuestion(id, node_or_way){
       try{
-        const my_url = "http://localhost:5000/posts/"+id+"&"+node_or_way
+        const my_url = this.$api_url + "/posts/"+id+"&"+node_or_way
         const requestSpatialite = {
           method:"get",
           headers:{ "Content-Type":"application/json"},
@@ -195,31 +229,14 @@ export default {
       }
     },
 
-    /*doSomething(){
-      console.log("awimmawe")
-      console.log(this.$refs.htmlPopup.$el.outerHTML)
-      const ref=this
-      console.log("DOING")
-      this.mappa.on('click', 'my_way_data',function(e){
-        //qua dovrei fare na chiamata e aspettare la risposta per poi caricare le doamnde corrispondenti al dato elemento.
-        console.log(this)
-        ref.getQuestion(e.features[0].properties.id,"WAY").then(items =>{
-          ref.my_items = items;
-          console.log("AAAAAAAAAAAAAAA")
-          console.log("yo"+ref.$refs.htmlPopup.items)
-          console.log(ref.page.$refs.myMapp)
-          console.log(ref.$refs.htmlPopup)
-          console.log("yo"+ref.$refs.htmlPopup.$el.outerHTML) 
-          new maplibre.Popup().
-            setLngLat(e.lngLat).
-            setHTML(ref.$refs.htmlPopup.$el.outerHTML).
-            addTo(this.mappa);
-        })
-      })
-    },*/
-    async getAllUrls(_callback){
+    async getAllCompletedWaysAndNodes(_callback,type){
       try{
-        const my_url = "http://localhost:5000/posts/geturls"
+        var my_url = ""
+        if(type == "way"){
+          my_url = this.$api_url + "/posts/way/checkcompleted"
+        }else{
+          my_url = this.$api_url + "/posts/node/checkcompleted"
+        }
         const requestSpatialite = {
           method:"get",
           headers:{ "Content-Type":"application/json"},
